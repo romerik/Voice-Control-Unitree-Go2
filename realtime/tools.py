@@ -3,76 +3,18 @@ import chainlit as cl
 import plotly
 import json
 import time
-from typing import Optional, List
+from typing import List
 import subprocess
 import os
 import asyncio
 import chainlit as cl
 from typing import Optional, Dict, Any
 import random
+# Gesture control tool
+import signal
 
-# Keep the existing stock and chart tools
-# query_stock_price_def = {
-#     "name": "query_stock_price",
-#     "description": "Queries the latest stock price information for a given stock symbol.",
-#     "parameters": {
-#       "type": "object",
-#       "properties": {
-#         "symbol": {
-#           "type": "string",
-#           "description": "The stock symbol to query (e.g., 'AAPL' for Apple Inc.)"
-#         },
-#         "period": {
-#           "type": "string",
-#           "description": "The time period for which to retrieve stock data (e.g., '1d' for one day, '1mo' for one month)"
-#         }
-#       },
-#       "required": ["symbol", "period"]
-#     }
-# }
-
-# async def query_stock_price_handler(symbol, period):
-#     """
-#     Queries the latest stock price information for a given stock symbol.
-#     """
-#     try:
-#         stock = yf.Ticker(symbol)
-#         hist = stock.history(period=period)
-#         if hist.empty:
-#             return {"error": "No data found for the given symbol."}
-#         return hist.to_json()
- 
-#     except Exception as e:
-#         return {"error": str(e)}
-
-# query_stock_price = (query_stock_price_def, query_stock_price_handler)
-
-draw_plotly_chart_def = {
-    "name": "draw_plotly_chart",
-    "description": "Draws a Plotly chart based on the provided JSON figure and displays it with an accompanying message.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string",
-          "description": "The message to display alongside the chart"
-        },
-        "plotly_json_fig": {
-          "type": "string",
-          "description": "A JSON string representing the Plotly figure to be drawn"
-        }
-      },
-      "required": ["message", "plotly_json_fig"]
-    }
-}
-
-async def draw_plotly_chart_handler(message: str, plotly_json_fig):
-    fig = plotly.io.from_json(plotly_json_fig)
-    elements = [cl.Plotly(name="chart", figure=fig, display="inline")]
-
-    await cl.Message(content=message, elements=elements).send()
-    
-draw_plotly_chart = (draw_plotly_chart_def, draw_plotly_chart_handler)
+# Global variable to track the gesture control process
+gesture_control_process = None
 
 class RobotClient:
     def __init__(self, robot_script_path=None, network_interface=None, python_env=None):
@@ -1113,18 +1055,164 @@ async def robot_stop_handler(language: str = "english"):
 
 robot_stop = (robot_stop_def, robot_stop_handler)
 
-# Combine all tools
-# Combine all tools
-tools = [
-    # Original tools
-    draw_plotly_chart,
+
+robot_gesture_control_def = {
+    "name": "robot_gesture_control",
+    "description": "Enables or disables the gesture control mode for the robot, allowing control via hand gestures for accessibility.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Whether to start or stop the gesture control mode.",
+          "enum": ["start", "stop"]
+        },
+        "language": {
+          "type": "string",
+          "description": "Language of the command (for response formatting)",
+          "enum": ["english", "french", "kinyarwanda", "other"]
+        }
+      },
+      "required": ["action"]
+    }
+}
+
+async def robot_gesture_control_handler(action: str, language: str = "english"):
+    """
+    Starts or stops the gesture control mode for the robot.
     
+    Args:
+        action: Either "start" or "stop" to enable or disable gesture control
+        language: Language for response messages
+    """
+    global gesture_control_process
+    
+    # Multilingual responses
+    responses = {
+        "start": {
+            "english": "Starting gesture control mode. You can now control me with hand gestures!",
+            "french": "Démarrage du mode de contrôle gestuel. Vous pouvez maintenant me contrôler avec des gestes de la main !",
+            "kinyarwanda": "Gutangiza uburyo bwo kugenzura imyigendanire. Ubu ushobora kungenzura n'amaboko!",
+        },
+        "stop": {
+            "english": "Stopping gesture control mode. Voice commands are now active again.",
+            "french": "Arrêt du mode de contrôle gestuel. Les commandes vocales sont à nouveau actives.",
+            "kinyarwanda": "Guhagarika uburyo bwo kugenzura imyigendanire. Amajwi yongera gukora.",
+        },
+        "already_running": {
+            "english": "Gesture control is already running. Use 'stop' to disable it first.",
+            "french": "Le contrôle gestuel est déjà en cours d'exécution. Utilisez 'stop' pour le désactiver d'abord.",
+            "kinyarwanda": "Kugenzura imyigendanire byari bimaze gutangira. Koresha 'stop' kugirango ubihagarike.",
+        },
+        "not_running": {
+            "english": "Gesture control is not currently running.",
+            "french": "Le contrôle gestuel n'est pas en cours d'exécution.",
+            "kinyarwanda": "Kugenzura imyigendanire ntibiri gukora.",
+        },
+        "error": {
+            "english": "Error with gesture control: ",
+            "french": "Erreur avec le contrôle gestuel: ",
+            "kinyarwanda": "Ikibazo mu kugenzura imyigendanire: ",
+        }
+    }
+    
+    # Use English as fallback
+    lang_key = language if language in ["english", "french", "kinyarwanda"] else "english"
+    
+    try:
+        if action == "start":
+            if gesture_control_process is not None and gesture_control_process.poll() is None:
+                return {
+                    "status": "error",
+                    "message": responses["already_running"][lang_key]
+                }
+            
+            # Path to the gesture control script
+            script_path = os.path.join("/Users/romeriklokossou/Downloads/cookbook-main/realtime-assistant", "launch-gesture-control.py")
+            
+            # Start the gesture control script
+            gesture_control_process = subprocess.Popen(
+                ["python", script_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                bufsize=1
+            )
+            
+            # Wait a moment to make sure the process starts correctly
+            await asyncio.sleep(2)
+            
+            # Check if the process is still running
+            if gesture_control_process.poll() is not None:
+                # Process terminated quickly, likely an error
+                stdout, stderr = gesture_control_process.communicate()
+                error_message = stderr if stderr else stdout
+                gesture_control_process = None
+                return {
+                    "status": "error",
+                    "message": f"{responses['error'][lang_key]}{error_message}"
+                }
+            
+            await cl.Message(content=f"🤖 {responses['start'][lang_key]}").send()
+            
+            return {
+                "status": "success",
+                "message": responses["start"][lang_key]
+            }
+            
+        elif action == "stop":
+            if gesture_control_process is None or gesture_control_process.poll() is not None:
+                return {
+                    "status": "error",
+                    "message": responses["not_running"][lang_key]
+                }
+            
+            # Terminate the gesture control process
+            gesture_control_process.terminate()
+            
+            try:
+                # Wait up to 5 seconds for the process to terminate
+                gesture_control_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                # If it doesn't terminate within 5 seconds, force kill it
+                gesture_control_process.kill()
+                gesture_control_process.wait()
+            
+            gesture_control_process = None
+            
+            await cl.Message(content=f"🤖 {responses['stop'][lang_key]}").send()
+            
+            return {
+                "status": "success",
+                "message": responses["stop"][lang_key]
+            }
+    
+    except Exception as e:
+        # Clean up if there was an error
+        if gesture_control_process is not None:
+            try:
+                gesture_control_process.terminate()
+            except:
+                pass
+            gesture_control_process = None
+            
+        return {
+            "status": "error",
+            "message": f"{responses['error'][lang_key]}{str(e)}"
+        }
+
+robot_gesture_control = (robot_gesture_control_def, robot_gesture_control_handler)
+
+# Combine all tools
+# Combine all tools
+tools = [    
     # Updated robot control tools
     robot_move,
     robot_posture,
     robot_special_action,
     robot_mode,
-    robot_stop
+    robot_stop,
+    robot_gesture_control
 ]
 
 # Language detection utility function
