@@ -327,22 +327,22 @@ async def robot_move_handler(movement_type: str, value: float, language: str = "
             "forward": {
                 "english": f"Moving forward {value} meters",
                 "french": f"Avançant de {value} mètres",
-                "kinyarwanda": f"Gusubiranya imbere metero {value}"
+                "kinyarwanda": f"Jya imbere metero {value}"
             },
             "backward": {
                 "english": f"Moving backward {value} meters",
                 "french": f"Reculant de {value} mètres",
-                "kinyarwanda": f"Gusubiranya inyuma metero {value}"
+                "kinyarwanda": f"jya inyuma metero {value}"
             },
             "rotate_left": {
                 "english": f"Rotating left {value} degrees",
                 "french": f"Tournant à gauche de {value} degrés",
-                "kinyarwanda": f"Gukota ibumoso dogere {value}"
+                "kinyarwanda": f"Gukata ibumoso degere {value}"
             },
             "rotate_right": {
                 "english": f"Rotating right {value} degrees",
                 "french": f"Tournant à droite de {value} degrés",
-                "kinyarwanda": f"Gukota iburyo dogere {value}"
+                "kinyarwanda": f"Gukata iburyo degere {value}"
             },
             "lateral_left": {
                 "english": f"Moving left {value} meters",
@@ -494,7 +494,7 @@ async def robot_posture_handler(posture: str, language: str = "english"):
             "balanced_stand": {
                 "english": "Adopting balanced stance",
                 "french": "Adopte une posture équilibrée",
-                "kinyarwanda": "Guhagarara mu buryo buringaniye"
+                "kinyarwanda": "Guhagarara neza"
             },
             "recovery_stand": {
                 "english": "Recovering to standing position",
@@ -514,7 +514,7 @@ async def robot_posture_handler(posture: str, language: str = "english"):
             "rise_sit": {
                 "english": "Rising from sitting position",
                 "french": "Se lève de la position assise",
-                "kinyarwanda": "Kuvaho aho yari yicaye"
+                "kinyarwanda": "Kuva aho wari wicaye"
             }
         }
         
@@ -739,7 +739,7 @@ async def robot_special_action_handler(action: str, current_mode: str = "unknown
             "stretch": {
                 "english": "Stretching",
                 "french": "S'étire",
-                "kinyarwanda": "Kwiyagura"
+                "kinyarwanda": "Kwinanura"
             },
             "dance": {
                 "english": "Dancing",
@@ -782,7 +782,7 @@ async def robot_special_action_handler(action: str, current_mode: str = "unknown
         ai_recommendations = {
             "english": "This action works best in AI mode. Consider switching modes if performance is not optimal.",
             "french": "Cette action fonctionne mieux en mode IA. Envisagez de changer de mode si les performances ne sont pas optimales.",
-            "kinyarwanda": "Iyi action ikora neza mu buryo bwa AI. Tekereza guhindura uburyo niba imikorere idahagije."
+            "kinyarwanda": "Iki gikorwa gikora neza mu buryo bwa AI. Tekereza guhindura uburyo niba imikorere idahagije."
         }
         
         # Use English as fallback for other languages
@@ -1015,7 +1015,7 @@ async def robot_stop_handler(language: str = "english"):
         stop_descriptions = {
             "english": "Stopping all movement",
             "french": "Arrêt de tous les mouvements",
-            "kinyarwanda": "Guhagarika imyigendanire yose"
+            "kinyarwanda": "Guhagarika imigendere yose"
         }
         
         # Use English as fallback for other languages
@@ -1092,27 +1092,27 @@ async def robot_gesture_control_handler(action: str, language: str = "english"):
         "start": {
             "english": "Starting gesture control mode. You can now control me with hand gestures!",
             "french": "Démarrage du mode de contrôle gestuel. Vous pouvez maintenant me contrôler avec des gestes de la main !",
-            "kinyarwanda": "Gutangiza uburyo bwo kugenzura imyigendanire. Ubu ushobora kungenzura n'amaboko!",
+            "kinyarwanda": "Gutangiza uburyo bwo kugenzura imigendere. Ubu ushobora kungenzura n'amaboko!",
         },
         "stop": {
             "english": "Stopping gesture control mode. Voice commands are now active again.",
             "french": "Arrêt du mode de contrôle gestuel. Les commandes vocales sont à nouveau actives.",
-            "kinyarwanda": "Guhagarika uburyo bwo kugenzura imyigendanire. Amajwi yongera gukora.",
+            "kinyarwanda": "Guhagarika uburyo bwo kugenzura imigendere. Amajwi yongera gukora.",
         },
         "already_running": {
             "english": "Gesture control is already running. Use 'stop' to disable it first.",
             "french": "Le contrôle gestuel est déjà en cours d'exécution. Utilisez 'stop' pour le désactiver d'abord.",
-            "kinyarwanda": "Kugenzura imyigendanire byari bimaze gutangira. Koresha 'stop' kugirango ubihagarike.",
+            "kinyarwanda": "Kugenzura imigendere byari bimaze gutangira. Koresha 'stop' kugirango ubihagarike.",
         },
         "not_running": {
             "english": "Gesture control is not currently running.",
             "french": "Le contrôle gestuel n'est pas en cours d'exécution.",
-            "kinyarwanda": "Kugenzura imyigendanire ntibiri gukora.",
+            "kinyarwanda": "Kugenzura imigenderee ntibiri gukora.",
         },
         "error": {
             "english": "Error with gesture control: ",
             "french": "Erreur avec le contrôle gestuel: ",
-            "kinyarwanda": "Ikibazo mu kugenzura imyigendanire: ",
+            "kinyarwanda": "Ikibazo mu kugenzura imigendere: ",
         }
     }
     
